@@ -10,13 +10,13 @@ app.get('/', (req,res)=>{
 
 io.on('connection', (socket)=>{
   console.log('user connected');
+
   //annouces the connection of the new user to the server
   var user = {};
   socket.on('user join', (userName)=>{
     //create the user object
      user = generateUser(userName);
-
-    //create the user object
+     //save the users name and id in arrays
     online_users.push(user.name);
     user_ids.push(user.id);
 
