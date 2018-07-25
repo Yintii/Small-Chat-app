@@ -8,23 +8,10 @@ app.get('/', (req,res)=>{
   res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/newspace', (req,res)=>{
-  res.sendFile(__dirname + '/index.html');
-});
-
-
-var newspace = io.of('/newspace');
-newspace.on('connection', (socket)=>{
-  console.log('someone connected to the new space');
-});
-newspace.emit('hi', 'everyone!');
-
-
-
 io.on('connection', (socket)=>{
   console.log('user connected');
   //annouces the connection of the new user to the server
-  socket.join()
+  var user = {};
   socket.on('user join', (userName)=>{
     //create the user object
      user = generateUser(userName);
