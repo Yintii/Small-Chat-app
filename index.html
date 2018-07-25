@@ -13,9 +13,10 @@
       }
       ul, li{list-style: none; }
       /* chat area needs display: none; after design changes are finished and to remove it from name pick*/
-      #namePick {}
+      #namePick {display: none;}
+      #messages{ height: 80%; overflow-y: scroll; scroll-behavior: smooth;}
       #chatform { min-height: 100%; height:100%;}
-      .chatarea {  display: none; height: 100%;}
+      .chatarea {height: 100%;}
       #chatbox {position: absolute; width: 98%; bottom:0;}
       </style>
 
@@ -35,7 +36,7 @@
         </div>
 
         <div id="chatform" class="col-md-8 form-group">
-          <ul id="messages"></ul>
+          <ul id="messages" class="well"></ul>
           <form id="chatbox" class="form-group">
             <input id="m" class="form-control" autocomplete="off" /><button class="form-control btn btn-primary">Send</button>
           </form>
@@ -73,7 +74,7 @@
           //when the client receives a chat from the server, it appends
           //it to the messages div
           socket.on('chat message', function(msg){
-            $('#messages').append($('<li>').text(msg));
+            $('#messages').append($('<li class="message">').text(msg));
           });
 
           //get the name from the particular client that is connected
