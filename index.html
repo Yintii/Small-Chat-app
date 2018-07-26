@@ -7,68 +7,123 @@
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <style>
-      html, body {min-height: 100%; height:100%;}
-      body{padding: 2%;}
-      ul, li{list-style: none; }
+      html{height:100%;}
+      body { min-height:100%; padding:2%; height:100%; background-image:linear-gradient(#e66465, #9198e5);}
+      h2 {position: grid; align-content: center;}
+      ul{list-style: none;}
+
+      #chatbox {position: absolute; bottom:0; width: inherit;}
+      #chatform { min-height:100%; height:100%; position: relative;}
+      #messagesContainer{ height: 90%;}
+      #messages { height: 100%; min-height: 100%; scroll-behavior: smooth; overflow-y: scroll; width: 100%; }
+      #messages::-webkit-scrollbar{display:none;}
       /* chat area needs display: none; after design changes are finished and to remove it from name pick*/
       #namePick {}
-      #messagesContainer{ height: 90%; background-color: #eee;}
-      #messages {height: 100%; overflow-y: scroll; scroll-behavior: smooth;}
-      #chatform { min-height: 100%; height:100%;}
-      .chatarea { display: none; height: 100%;}
-      #chatbox {position: absolute; width: 98%; bottom:0;}
-      </style>
+      #sendBtnSpan{border-radius: 5px}
+      #userTyping{position: absolute; bottom: 0; color: #ffffd6;}
 
+      /* chat area needs display: none; after design changes are finished and to remove it from name pick*/
+      #chatInterface {height: 100%; min-height: 100%; display: none; }
+      .faded-bg{background-color: rgba(238,238,238,.6); border: none;}
+      .message{
+        margin-bottom: 1%;
+        border-bottom: solid;
+        border-bottom-color:rgba(0,0,0,.1);
+        width: 95%;
+      }
+      .row{
+        height: 100%;
+        min-height: 100%;
+      }
+    </style>
   </head>
   <body>
-    <!-- disappears after name is selected -->
+    <!-- form before you chat to choose a name - disappears after name is selected -->
+    <!-- form before you chat to choose a name - disappears after name is selected -->
       <form id="namePick" class="form-group">
-        <input id="nn" placeholder="Choose a name to chat with" class="form-control" autocomplete="off"><button class="btn btn-primary">Submit</button>
+        <input id="nn" placeholder="Choose a name to chat with" class="form-control" autocomplete="off">
+        <img src="" alt="Image preview...">
+        <input id="avi" width="40" height="40" name="User_avatar" type="file" onChange="previewFile()">
+        <button class="btn btn-primary">Submit</button>
       </form>
-    <!-- disappears after name is selected -->
+      <!-- form before you chat to choose a name - disappears after name is selected -->
+      <!-- form before you chat to choose a name - disappears after name is selected -->
 
-
-    <div class="form-group chatarea">
-      <div class="row chatarea">
-        <div class="col-md-4 well chatarea">
-          <h3>users online</h3>
+    <!-- main content area - appears after name is selected-->
+    <div id="chatInterface" class="form-group">
+      <div class="row">
+        <!-- shows the online users -->
+        <!-- shows the online users -->
+        <!-- shows the online users -->
+          <!-- LEFT MAIN SIDE -->
+        <div class="col-sm-3 well faded-bg">
+          <h2>Online Users</h2>
           <ul id="onlineUsers"></ul>
         </div>
 
-        <div id="chatform" class="col-md-8 form-group">
-          <div id="messagesContainer" class="well">
+        <!-- div that holds the chat box that displays all the client msgs-->
+        <!-- div that holds the chat box that displays all the client msgs-->
+        <!-- div that holds the chat box that displays all the client msgs-->
+                  <!-- RIGHT MAIN SIDE -->
+        <div id="chatform" class="col-sm-9 form-group">
+          <div id="messagesContainer" class="well faded-bg">
             <ul id="messages"></ul>
           </div>
-        <!--chat box where you enter text to chat with-->
-          <form id="chatbox" class="form-group">
-            <div class="input-group">
-              <input id="m" class="form-control" autocomplete="off" />
-              <span class="input-group-btn">
-                <button class="btn btn-primary">Send</button>
-              </span>
-            </div>
-          </form>
+
+          <!-- chat box where you enter text to chat with-->
+          <!-- chat box where you enter text to chat with-->
+          <!-- chat box where you enter text to chat with-->
+            <form class="input-group form-group">
+              <input id="m" class="form-control faded-bg" autocomplete="off" />
+
+                <span id="sendBtnSpan" class="input-group-btn faded-bg">
+                  <button class="btn">Send</button>
+                </span>
+            </form>
         </div>
       </div>
     </div>
-
-
-
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
       <script>
+
+      //function for uploading the avatar
+      function previewFile(){
+            var preview = document.querySelector('img'); //selects the query named img
+            var file    = document.querySelector('input[type=file]').files[0]; //sames as here
+            var reader  = new FileReader();
+
+            reader.onloadend = function () {
+                preview.src = reader.result;
+            }
+
+            if (file) {
+                reader.readAsDataURL(file); //reads the data as a URL
+            } else {
+                preview.src = "";
+            }
+        }
+
+        previewFile();
+
         $(function () {
           var socket = io();
+          var chatInput = $('#m');
+          var typingStatus = $('#userTyping');
+          var lastTypedDate = new Date(0);
+          var typingDelayInMillis = 5000;
+
           //The small form that you pick your name from before you chat
           $('#namePick').submit(function(){
             socket.name = $('#nn').val();
-            socket.emit('user join', socket.name);
+            socket.avi = $('#avi').val();
+            socket.emit('user join', socket.name, socket.avi);
             $('#nn').val('');
             //hides the name form, shows main chat form
             $('#namePick').hide();
-            $('.chatarea').show();
+            $('#chatInterface').show();
             return false;
           });
 
@@ -83,37 +138,70 @@
           //when the client receives a chat from the server, it appends
           //it to the messages div
           socket.on('chat message', function(msg){
-            appendNewMessage(msg);
+            appendClientMessage(msg);
             //forces the chat window to scroll to show the newest chats
             $('#messages').scrollTop($('#messages')[0].scrollHeight);
           });
 
           //annouces the user that joined and ads them to the room list
           socket.on('user join', function(msg, userList) {
-            appendNewMessage(msg);
+            appendServerMessage(msg);
             updateOnlineList(userList);
 
           });
 
           //annouces the user that joined and ads them to the room list
           socket.on('user leave', function(msg, userList){
-            appendNewMessage(msg);
+            appendServerMessage(msg);
             updateOnlineList(userList);
           });
+
+          /*
+          socket.on('typing', function(status){
+            typingStatus.html = status;
+          });
+          */
 
           //used by the user leave and user join methods, just updates the list
           //on the left hand side to have a list of all currently online users
           function updateOnlineList(userList){
             document.getElementById('onlineUsers').innerHTML = '';
+            console.log(userList);
             for(var i = 0;i<userList.length;i++){
               $('#onlineUsers').append($('<li>').text(userList[i]));
             }
           }
-          
-          //puts a new li item in my messages unordered list
-          function appendNewMessage(msg){
+
+          //handles all the user messages and the formatting
+          function appendClientMessage(msg, avi){
+            $('#messages').append($('<img height="40" width="40"><li class="message">').text(msg));
+          }
+
+          //appends a plain text message of who has joined or left chat
+          function appendServerMessage(msg){
             $('#messages').append($('<li class="message">').text(msg));
           }
+
+
+          //This will be used for showing a small text when users are typing
+          /*
+          function refreshTypingStatus(){
+            if (!chatInput.is(':focus') || chatInput.val() == '' || new Date().getTime() - lastTypedTime.getTime() > typingDelayInMillis) {
+                socket.emit('not typing');
+            } else {
+                socket.emit('typing', socket.name);
+            }
+          }
+
+          function updateLastTypedTime() {
+              lastTypedTime = new Date();
+          }
+
+          setInterval(refreshTypingStatus, 100);
+          chatInput.keypress(updateLastTypedTime);
+          chatInput.blur(refreshTypingStatus);
+          */
+          //This will be used for showing a small text when users are typing
 
         });
       </script>

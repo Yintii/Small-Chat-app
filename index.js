@@ -2,7 +2,8 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var online_users = [];
-var user_ids = []
+var user_ids = [];
+var lastMessenger = '';
 
 //serves the home index.html page when a user accesses the home page
 app.get('/', (req,res)=>{
@@ -14,9 +15,9 @@ io.on('connection', (socket)=>{
   var user = {};
 
   //annouces the connection of the new user to the server
-  socket.on('user join', (userName)=>{
+  socket.on('user join', (userName, userAvi)=>{
     //create user obj for reference
-    user = generateUser(userName);
+    user = generateUser(userName, userAvi);
     //add it's info to arrays
     online_users.push(user.name);
     user_ids.push(user.id);
@@ -28,9 +29,25 @@ io.on('connection', (socket)=>{
   //this pushes chat messages submitted by clients, to the rest of the clients
   //that are connected, and says who sent the message by referencing user.name
   socket.on('chat message', (msg)=>{
-    io.emit('chat message', user.name + ": " + msg);
+    if(lastMessenger != user.name){
+      io.emit('chat message', user.name + ": " + msg);
+      lastMessenger = user.name;
+    }else if(lastMessenger == user.name){
+      io.emit('chat message', msg);
+    }
+
   });
 
+//server side typing methods to push back to the clients connected,
+/*
+  socket.on('typing', (usr)=>{
+    io.emit('typing', usr + " is typing");
+  });
+
+  socket.on('not typing', ()=>{
+    io.emit('typing', '');
+  });
+*/
 
   //annouces when the user disconnects from server
   socket.on('disconnect', (user)=>{
@@ -48,13 +65,14 @@ io.on('connection', (socket)=>{
 
 //extra functions to make the user objects unique and recallable
 //extra functions to make the user objects unique and recallable
-function generateUser(userName){
+function generateUser(userName, userAvi){
   const generated_user = {
     //give them the name they picked
     name: userName,
     //give them a unique ID - check that it is unique, if it is not,
     //then it will generate a new one until it is unique
-    id: user_id = generateID()
+    id: user_id = generateID(),
+    avi: userAvi
   };
   return generated_user;
 }
@@ -69,6 +87,8 @@ function generateID(){
     return x;
   }
 }
+
+
 
 http.listen(3000, ()=>{
   console.log('listening on port 3000');
