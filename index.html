@@ -12,7 +12,7 @@
       ul, li{list-style: none; }
       /* chat area needs display: none; after design changes are finished and to remove it from name pick*/
       #namePick {}
-      #messagesContainer{ height: 90%;}
+      #messagesContainer{ height: 90%; background-color: #eee;}
       #messages {height: 100%; overflow-y: scroll; scroll-behavior: smooth;}
       #chatform { min-height: 100%; height:100%;}
       .chatarea { display: none; height: 100%;}
@@ -26,6 +26,7 @@
         <input id="nn" placeholder="Choose a name to chat with" class="form-control" autocomplete="off"><button class="btn btn-primary">Submit</button>
       </form>
     <!-- disappears after name is selected -->
+
 
     <div class="form-group chatarea">
       <div class="row chatarea">
@@ -47,11 +48,8 @@
               </span>
             </div>
           </form>
-
         </div>
-
       </div>
-
     </div>
 
 
@@ -63,11 +61,12 @@
       <script>
         $(function () {
           var socket = io();
-
+          //The small form that you pick your name from before you chat
           $('#namePick').submit(function(){
             socket.name = $('#nn').val();
             socket.emit('user join', socket.name);
             $('#nn').val('');
+            //hides the name form, shows main chat form
             $('#namePick').hide();
             $('.chatarea').show();
             return false;
@@ -80,19 +79,41 @@
             $('#m').val('');
             return false;
           });
+
           //when the client receives a chat from the server, it appends
           //it to the messages div
           socket.on('chat message', function(msg){
-            $('#messages').append($('<li class="message">').text(msg));
+            appendNewMessage(msg);
             //forces the chat window to scroll to show the newest chats
             $('#messages').scrollTop($('#messages')[0].scrollHeight);
           });
 
-          //get the name from the particular client that is connected
-          //to get the user that is leaving and annouce it
-          socket.on('disconnect', function(){
-            socket.emit('chat message', socket.name + ' has disconnected');
+          //annouces the user that joined and ads them to the room list
+          socket.on('user join', function(msg, userList) {
+            appendNewMessage(msg);
+            updateOnlineList(userList);
+
           });
+
+          //annouces the user that joined and ads them to the room list
+          socket.on('user leave', function(msg, userList){
+            appendNewMessage(msg);
+            updateOnlineList(userList);
+          });
+
+          //used by the user leave and user join methods, just updates the list
+          //on the left hand side to have a list of all currently online users
+          function updateOnlineList(userList){
+            document.getElementById('onlineUsers').innerHTML = '';
+            for(var i = 0;i<userList.length;i++){
+              $('#onlineUsers').append($('<li>').text(userList[i]));
+            }
+          }
+          
+          //puts a new li item in my messages unordered list
+          function appendNewMessage(msg){
+            $('#messages').append($('<li class="message">').text(msg));
+          }
 
         });
       </script>
