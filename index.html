@@ -168,7 +168,7 @@
             document.getElementById('onlineUsers').innerHTML = '';
             console.log(userList);
             for(var i = 0;i<userList.length;i++){
-              $('#onlineUsers').append($('<li>').text(userList[i]));
+              $('#onlineUsers').append($('<li>').text(userList[i].name));
             }
           }
 

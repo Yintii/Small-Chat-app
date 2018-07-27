@@ -1,8 +1,8 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var online_users = [];
-var user_ids = [];
+var connected_users = [];
+var online_list = [];
 var lastMessenger = '';
 
 //serves the home index.html page when a user accesses the home page
@@ -11,76 +11,65 @@ app.get('/', (req,res)=>{
 });
 
 io.on('connection', (socket)=>{
-  //make the user object a global - important for everyone to stay unique
-  var user = {};
+var clientUser = {};
 
-  //annouces the connection of the new user to the server
   socket.on('user join', (userName, userAvi)=>{
-    //create user obj for reference
-    user = generateUser(userName, userAvi);
-    //add it's info to arrays
-    online_users.push(user.name);
-    user_ids.push(user.id);
-    //pass the message of who has joined and the list of connected users
-    //to the client
-    io.emit('user join', user.name + ' has joined the server', online_users);
+    clientUser = generateUser(userName, userAvi);
+    console.log('Client user: ' + clientUser.name);
+    connected_users.push(clientUser);
+    var msg = clientUser.name + ' has joined the server';
+    io.emit('user join', msg, connected_users);
   });
 
   //this pushes chat messages submitted by clients, to the rest of the clients
   //that are connected, and says who sent the message by referencing user.name
   socket.on('chat message', (msg)=>{
-    if(lastMessenger != user.name){
-      io.emit('chat message', user.name + ": " + msg);
-      lastMessenger = user.name;
-    }else if(lastMessenger == user.name){
+    console.log(clientUser.name + " just sent a message")
+    if(lastMessenger != clientUser.name){
+      io.emit('chat message', clientUser.name + ": " + msg);
+      lastMessenger = clientUser.name;
+    }else if(lastMessenger == clientUser.name){
       io.emit('chat message', msg);
     }
-
   });
-
-//server side typing methods to push back to the clients connected,
-/*
-  socket.on('typing', (usr)=>{
-    io.emit('typing', usr + " is typing");
-  });
-
-  socket.on('not typing', ()=>{
-    io.emit('typing', '');
-  });
-*/
 
   //annouces when the user disconnects from server
-  socket.on('disconnect', (user)=>{
-    //get the name and ID of the user
-    var indexOfUser = online_users.indexOf(user.name);
-    var indexOfId = user_ids.indexOf(user.id);
-    //remove the user and their id from the arrays and store them for recall
-    var leaving_user = online_users.splice(indexOfUser);
-    var leaving_userID = user_ids.splice(indexOfId);
-    //pass the message of who has left and the list of the remaining
-    //connected users to the client
-    socket.broadcast.emit('user leave',  leaving_user + ' has disconnected', online_users);
+  socket.on('disconnect', ()=>{
+    for(var i =0; i< connected_users.length; i++){
+      if(clientUser.name === connected_users[i].name){
+        connected_users.splice(i);
+        console.log('Remaining users: ');
+        for(var i = 0; i<connected_users.length; i++){
+          console.log(connected_users[i].name);
+        }
+      }
+    }
+    var msg = clientUser.name + " has disconnected";
+    socket.broadcast.emit('user leave', msg, connected_users);
   });
+
 });
 
-//extra functions to make the user objects unique and recallable
-//extra functions to make the user objects unique and recallable
+
+
+
+//constructor method for users
 function generateUser(userName, userAvi){
   const generated_user = {
     //give them the name they picked
     name: userName,
-    //give them a unique ID - check that it is unique, if it is not,
-    //then it will generate a new one until it is unique
-    id: user_id = generateID(),
-    avi: userAvi
+    avi: userAvi,
+    id: user_id = generateID()
   };
   return generated_user;
 }
 
+
+
 function generateID(){
   var x = Math.floor((Math.random() * 10) + 1);
   //if the number choosen is already in the list, get a new number
-  if(user_ids.includes(x)){
+  if(connected_users.hasOwnProperty(x)){
     return generateID();
   }else{
     //return the random and unique number
