@@ -24,6 +24,9 @@
 
       /* chat area needs display: none; after design changes are finished and to remove it from name pick*/
       #chatInterface {height: 100%; min-height: 100%; display: none; }
+
+      #clientMessage{color: blue}
+
       .faded-bg{background-color: rgba(238,238,238,.6); border: none;}
       .message{
         margin-bottom: 1%;
@@ -42,12 +45,12 @@
     <!-- form before you chat to choose a name - disappears after name is selected -->
       <form id="namePick" class="form-group">
         <input id="nn" placeholder="Choose a name to chat with" class="form-control" autocomplete="off">
-        <img src="" alt="Image preview...">
-        <input id="avi" width="40" height="40" name="User_avatar" type="file" onChange="previewFile()">
+        <img src="" width="40" height="40" alt="Image preview...">
+        <input id="avi" width="40" height="40" name="user_avi" type="file" accept="image/*" onChange="previewFile()">
         <button class="btn btn-primary">Submit</button>
       </form>
-      <!-- form before you chat to choose a name - disappears after name is selected -->
-      <!-- form before you chat to choose a name - disappears after name is selected -->
+    <!-- form before you chat to choose a name - disappears after name is selected -->
+    <!-- form before you chat to choose a name - disappears after name is selected -->
 
     <!-- main content area - appears after name is selected-->
     <div id="chatInterface" class="form-group">
@@ -137,8 +140,9 @@
 
           //when the client receives a chat from the server, it appends
           //it to the messages div
-          socket.on('chat message', function(msg){
-            appendClientMessage(msg);
+          socket.on('chat message', function(msg,usr,avi){
+            clientMsg = new Message(msg,usr,avi);
+            appendClientMessage(clientMsg);
             //forces the chat window to scroll to show the newest chats
             $('#messages').scrollTop($('#messages')[0].scrollHeight);
           });
@@ -156,14 +160,7 @@
             updateOnlineList(userList);
           });
 
-          /*
-          socket.on('typing', function(status){
-            typingStatus.html = status;
-          });
-          */
 
-          //used by the user leave and user join methods, just updates the list
-          //on the left hand side to have a list of all currently online users
           function updateOnlineList(userList){
             document.getElementById('onlineUsers').innerHTML = '';
             console.log(userList);
@@ -173,8 +170,9 @@
           }
 
           //handles all the user messages and the formatting
-          function appendClientMessage(msg, avi){
-            $('#messages').append($('<img height="40" width="40"><li class="message">').text(msg));
+          function appendClientMessage(cliMsg){
+            $('#messages').append($('<li class="message">').text(cliMsg.msg));
+
           }
 
           //appends a plain text message of who has joined or left chat
@@ -182,6 +180,11 @@
             $('#messages').append($('<li class="message">').text(msg));
           }
 
+          function Message(message, username, avatar){
+            this.msg = message;
+            this.user = username;
+            this.avi = avatar;
+          }
 
           //This will be used for showing a small text when users are typing
           /*
