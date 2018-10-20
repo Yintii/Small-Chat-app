@@ -1,9 +1,23 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var mysql = require('mysql');
+var exports = require('./exports')
 var connected_users = [];
 var online_list = [];
 var lastMessenger = '';
+
+var con = mysql.createConnection({
+  host: exports.host,
+  user: exports.user,
+  password: exports.password
+});
+
+con.connect(function(err){
+  if (err) throw err;
+  console.log("Connected!");
+});
+
 
 //serves the home index.html page when a user accesses the home page
 app.get('/', (req,res)=>{
