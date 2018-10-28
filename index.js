@@ -49,7 +49,7 @@ var clientUser = {};
               [clientUser.id, clientUser.name, clientUser.avi],
               (err,res,fields)=>{
                 if(err) throw err;
-                console.log("Inserted user successfully");
+                console.log("Inserted user successfully!");
               });
 
     con.end();
