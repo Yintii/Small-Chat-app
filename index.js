@@ -13,10 +13,7 @@ var con = mysql.createConnection({
   password: exports.password
 });
 
-con.connect(function(err){
-  if (err) throw err;
-  console.log("Connected!");
-});
+
 
 
 //serves the home index.html page when a user accesses the home page
@@ -28,8 +25,35 @@ io.on('connection', (socket)=>{
 var clientUser = {};
   //when user first joins, initialize them in an object and store it
   socket.on('user join', (userName, userAvi)=>{
+
+    //open mysql connection
+    con.connect(function(err){
+      if (err) throw err;
+      console.log("Connected!");
+    });
+
+    //make the object representative to the user
     clientUser = generateUser(userName, userAvi);
-    console.log('Client user: ' + clientUser.name, clientUser.avi);
+    console.log('Client user: ' + clientUser.name + ' - ' + clientUser.avi + ' - ' + clientUser.id);
+
+    //make sure you're connected to the correct database
+    con.query("USE chat_users;", (err, res, fields)=>{
+      if(err) throw err;
+      console.log(res);
+    });
+
+    var id = parseInt(clientUser.id);
+    var sql = "INSERT INTO users(user_id, user_name, user_avi) VALUES(?, ?, ?)";
+
+    con.query(sql, 
+              [clientUser.id, clientUser.name, clientUser.avi],
+              (err,res,fields)=>{
+                if(err) throw err;
+                console.log("Inserted user successfully");
+              });
+
+    con.end();
+
     connected_users.push(clientUser);
     var msg = clientUser.name + ' has joined the server';
     io.emit('user join', msg, connected_users);
@@ -71,21 +95,21 @@ function generateUser(userName, userAvi){
   const generated_user = {
     //give them the name they picked
     name: userName,
-    avi: userAvi = getAvi(userAvi),
+    avi: userAvi = '/avatar_default.jpg',
     id: user_id = generateID()
   };
   return generated_user;
 }
-
+/*
 function getAvi(a){
   if(a == null){
-    avatar = './avatar_default.jpg';
+    var avatar = './avatar_default.jpg';
   }else{
     avatar = a;
     return avatar;
   }
 }
-
+*/
 function generateID(){
   var x = Math.floor((Math.random() * 10) + 1);
   //if the number choosen is already in the list, get a new number
