@@ -1,19 +1,10 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var mysql = require('mysql');
 var exports = require('./exports')
 var connected_users = [];
 var online_list = [];
 var lastMessenger = '';
-
-var con = mysql.createConnection({
-  host: exports.host,
-  user: exports.user,
-  password: exports.password
-});
-
-
 
 
 //serves the home index.html page when a user accesses the home page
@@ -26,38 +17,16 @@ var clientUser = {};
   //when user first joins, initialize them in an object and store it
   socket.on('user join', (userName, userAvi)=>{
 
-    //open mysql connection
-    con.connect(function(err){
-      if (err) throw err;
-      console.log("Connected!");
-    });
-
     //make the object representative to the user
     clientUser = generateUser(userName, userAvi);
     console.log('Client user: ' + clientUser.name + ' - ' + clientUser.avi + ' - ' + clientUser.id);
 
-    //make sure you're connected to the correct database
-    con.query("USE chat_users;", (err, res, fields)=>{
-      if(err) throw err;
-      console.log(res);
-    });
-
-    var id = parseInt(clientUser.id);
-    var sql = "INSERT INTO users(user_id, user_name, user_avi) VALUES(?, ?, ?)";
-
-    con.query(sql, 
-              [clientUser.id, clientUser.name, clientUser.avi],
-              (err,res,fields)=>{
-                if(err) throw err;
-                console.log("Inserted user successfully!");
-              });
-
-    con.end();
-
     connected_users.push(clientUser);
+
     var msg = clientUser.name + ' has joined the server';
     io.emit('user join', msg, connected_users);
   });
+
 
   //handles the chat messages sent to the server by the clients
   socket.on('chat message', (msg)=>{
@@ -90,6 +59,7 @@ var clientUser = {};
 
 });
 
+
 //constructor method for users
 function generateUser(userName, userAvi){
   const generated_user = {
@@ -100,18 +70,9 @@ function generateUser(userName, userAvi){
   };
   return generated_user;
 }
-/*
-function getAvi(a){
-  if(a == null){
-    var avatar = './avatar_default.jpg';
-  }else{
-    avatar = a;
-    return avatar;
-  }
-}
-*/
+
 function generateID(){
-  var x = Math.floor((Math.random() * 10) + 1);
+  var x = Math.floor((Math.random() * 100) + 1);
   //if the number choosen is already in the list, get a new number
   if(connected_users.hasOwnProperty(x)){
     return generateID();

@@ -156,6 +156,7 @@
 
           //annouces the user that joined and ads them to the room list
           socket.on('user leave', function(msg, userList){
+            console.log(userList)
             appendServerMessage(msg);
             updateOnlineList(userList);
           });
