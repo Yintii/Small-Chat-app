@@ -45,8 +45,6 @@
     <!-- form before you chat to choose a name - disappears after name is selected -->
       <form id="namePick" class="form-group">
         <input id="nn" placeholder="Choose a name to chat with" class="form-control" autocomplete="off">
-        <img src="" width="40" height="40" alt="Image preview...">
-        <input id="avi" width="40" height="40" name="user_avi" type="file" accept="image/*" onChange="previewFile()">
         <button class="btn btn-primary">Submit</button>
       </form>
     <!-- form before you chat to choose a name - disappears after name is selected -->
@@ -91,26 +89,6 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
       <script>
-
-      //function for uploading the avatar
-      function previewFile(){
-            var preview = document.querySelector('img'); //selects the query named img
-            var file    = document.querySelector('input[type=file]').files[0]; //sames as here
-            var reader  = new FileReader();
-
-            reader.onloadend = function () {
-                preview.src = reader.result;
-            }
-
-            if (file) {
-                reader.readAsDataURL(file); //reads the data as a URL
-            } else {
-                preview.src = "";
-            }
-        }
-
-        previewFile();
-
         $(function () {
           var socket = io();
           var chatInput = $('#m');

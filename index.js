@@ -30,7 +30,10 @@ var clientUser = {};
 
   //handles the chat messages sent to the server by the clients
   socket.on('chat message', (msg)=>{
-    console.log(clientUser.name + " just sent a message")
+    //If you just hit enter, it won't send a message.
+    if (msg == ""){
+      return;
+    }
     //if a new user is typing, make sure to add their name
     if(lastMessenger != clientUser.name){
       io.emit('chat message', clientUser.name + ": " + msg);
@@ -39,6 +42,7 @@ var clientUser = {};
     }else if(lastMessenger == clientUser.name){
       io.emit('chat message', msg, clientUser.name, clientUser.avi);
     }
+    console.log(clientUser.name + " just sent a message")
   });
 
   //adjusts the connected_users list to not have the person who left,
