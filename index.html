@@ -30,9 +30,16 @@
       .faded-bg{background-color: rgba(238,238,238,.6); border: none;}
       .message{
         margin-bottom: 1%;
+        width: 95%;
+      }
+      .serverMsg{
+        border: 1px solid;
+        border-color:rgba(0,0,0,.1);
+        color: #eee;
+      }
+      .lastUserMsg{
         border-bottom: solid;
         border-bottom-color:rgba(0,0,0,.1);
-        width: 95%;
       }
       .row{
         height: 100%;
@@ -107,7 +114,6 @@
             $('#chatInterface').show();
             return false;
           });
-
           //sends the message to the server when you hit enter
           //then changes the value of the text box to ''
           $('#chatform').submit(function(){
@@ -116,14 +122,25 @@
             return false;
           });
 
+
+          /*
+          Below is the main function body for the chat interface
+          Below is the main function body for the chat interface
+          Below is the main function body for the chat interface
+          Below is the main function body for the chat interface
+          */
+
+
           //when the client receives a chat from the server, it appends
           //it to the messages div
-          socket.on('chat message', function(msg,usr,avi){
-            clientMsg = new Message(msg,usr,avi);
+          socket.on('chat message', function(msg,usr,avi,change){
+            //put each peice of the message in a clientMsg object
+            clientMsg = new Message(msg,usr,avi,change);
             appendClientMessage(clientMsg);
             //forces the chat window to scroll to show the newest chats
             $('#messages').scrollTop($('#messages')[0].scrollHeight);
           });
+
 
           //annouces the user that joined and ads them to the room list
           socket.on('user join', function(msg, userList) {
@@ -140,6 +157,8 @@
           });
 
 
+
+
           function updateOnlineList(userList){
             document.getElementById('onlineUsers').innerHTML = '';
             console.log(userList);
@@ -150,19 +169,30 @@
 
           //handles all the user messages and the formatting
           function appendClientMessage(cliMsg){
-            $('#messages').append($('<li class="message">').text(cliMsg.msg));
-
+            if(cliMsg.change){
+              sendMessage(cliMsg.msg);
+            }else{
+              $( "li" ).last().removeClass('lastUserMsg');
+              sendMessage(cliMsg.msg);
+            }
           }
+          
 
           //appends a plain text message of who has joined or left chat
           function appendServerMessage(msg){
-            $('#messages').append($('<li class="message">').text(msg));
+            $('#messages').append($('<li class="serverMsg message">').text(msg));
           }
 
-          function Message(message, username, avatar){
+          function Message(message, username, avatar, userChange){
             this.msg = message;
             this.user = username;
             this.avi = avatar;
+            this.change = userChange;
+          }
+          
+          //used by client users - server has it's own function
+          function sendMessage(msg){
+            $('#messages').append($('<li class="lastUserMsg message">').text(msg));
           }
 
           //This will be used for showing a small text when users are typing

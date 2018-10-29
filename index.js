@@ -20,7 +20,8 @@ var clientUser = {};
     //make the object representative to the user
     clientUser = generateUser(userName, userAvi);
     console.log('Client user: ' + clientUser.name + ' - ' + clientUser.avi + ' - ' + clientUser.id);
-
+    
+    //add user to the active user array
     connected_users.push(clientUser);
 
     var msg = clientUser.name + ' has joined the server';
@@ -34,16 +35,37 @@ var clientUser = {};
     if (msg == ""){
       return;
     }
+
+    var change;
+    sameMessenger = lastMessenger == clientUser.name;
+    differentMessager = lastMessenger != clientUser.name;
+
     //if a new user is typing, make sure to add their name
-    if(lastMessenger != clientUser.name){
-      io.emit('chat message', clientUser.name + ": " + msg);
+    if(differentMessager){
+      change = true;
+      io.emit('chat message', clientUser.name + ": " + msg,
+                              clientUser.name,
+                              clientUser.avi,
+                              change);
+
       lastMessenger = clientUser.name;
     //but if the user was the last to send a message, just append to last message
-    }else if(lastMessenger == clientUser.name){
-      io.emit('chat message', msg, clientUser.name, clientUser.avi);
+    }else if(sameMessenger){
+      change = false;
+      io.emit('chat message', msg, 
+                              clientUser.name, 
+                              clientUser.avi,
+                              change);
     }
-    console.log(clientUser.name + " just sent a message")
+    console.log(clientUser.name + " just sent a message: " + msg);
   });
+
+
+
+
+
+
+
 
   //adjusts the connected_users list to not have the person who left,
   //makes a msg depicted who has left
