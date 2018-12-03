@@ -1,7 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var exports = require('./exports')
+//var exports = require('./exports')
 var connected_users = [];
 var online_list = [];
 var lastMessenger = '';
@@ -59,13 +59,6 @@ var clientUser = {};
     }
     console.log(clientUser.name + " just sent a message: " + msg);
   });
-
-
-
-
-
-
-
 
   //adjusts the connected_users list to not have the person who left,
   //makes a msg depicted who has left
