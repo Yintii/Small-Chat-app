@@ -1,15 +1,14 @@
 var app = require('express')();
-var server = require('http').createServer(app)
-var io = require('socket.io')(server);
+var http = require('http').createServer(app)
+var io = require('socket.io')(http);
 var port = 8081
-var connected_users = [];
-var online_list = [];
-var lastMessenger = '';
+var connected_users = []
+var online_list = []
+var lastMessenger = ''
 
-server.listen(port, ()=>{
-  console.log('listening on port 8081');
-});
+http.listen(port, "127.0.0.1")
 
+io.listen(http)
 
 
 //serves the home index.html page when a user accesses the home page
